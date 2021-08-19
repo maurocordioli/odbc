@@ -68,6 +68,7 @@ func (r *Rows) NextResultSet() error {
 
 // ColumnTypeDatabaseTypeName return the database system type name.
 func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
+ 
 	switch x := r.os.Cols[index].(type) {
 	case *BindableColumn:
 		return cTypeString(x.CType)
@@ -77,10 +78,21 @@ func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
 	return ""
 }
 
+func (r *Rows) RowsColumnTypeLength(index int) int  {
+	switch x := r.os.Cols[index].(type) {
+	case *BindableColumn:
+		return x.Len
+	case *NonBindableColumn:
+		return 0
+	}
+
+} 
+
+
 func cTypeString(ct api.SQLSMALLINT) string {
 	switch ct {
 	case api.SQL_C_CHAR:
-		return "SQL_C_CHAR"
+		return  "SQL_C_CHAR"
 	case api.SQL_C_LONG:
 		return "SQL_C_LONG"
 	case api.SQL_C_SHORT:
@@ -113,6 +125,7 @@ func cTypeString(ct api.SQLSMALLINT) string {
 		return "SQL_C_UBIGINT"
 	case api.SQL_C_GUID:
 		return "SQL_C_GUID"
+	case api.SQL_C_WCHAR
 	}
 	return ""
 }
