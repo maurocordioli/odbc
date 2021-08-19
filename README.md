@@ -1,4 +1,4 @@
-based on  alexbrainman work with some improvemnts like
+based on  alexbrainman work with some changes like
 - names of the columns
 - lenght of the columns
 -
