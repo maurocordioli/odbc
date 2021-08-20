@@ -6,9 +6,10 @@ package odbc
 
 import (
 	"database/sql/driver"
+	"fmt"
 	"io"
 
-	"github.com/alexbrainman/odbc/api"
+	"github.com/maurocordioli/odbc/api"
 )
 
 type Rows struct {
@@ -70,21 +71,99 @@ func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
 
 	switch x := r.os.Cols[index].(type) {
 	case *BindableColumn:
-		return cTypeString(x.CType)
+		return sqlTypeString(x.CType) + "|" + cTypeString(x.CType)
 	case *NonBindableColumn:
-		return cTypeString(x.CType)
+		return sqlTypeString(x.CType) + "|" + cTypeString(x.CType)
 	}
 	return ""
 }
 
-func (r *Rows) RowsColumnTypeLength(index int) int {
+func (r *Rows) ColumnTypeLength(index int) (length int64, ok bool) {
+
 	switch x := r.os.Cols[index].(type) {
 	case *BindableColumn:
-		return x.Len
+		//zap.S().Infof("BindableColumn ************************** ColumnTypeLength %v %v", index, x.Size)
+		return int64(x.Size), true
 	case *NonBindableColumn:
-		return 0
+		//zap.S().Infof("BindableColumn ************************** ColumnTypeLength %v", index)
+		return 0, false
+	}
+	return 0, false
+}
+
+func sqlTypeString(ct api.SQLSMALLINT) string {
+
+	switch ct {
+
+	case api.SQL_UNKNOWN_TYPE:
+		return "SQL_UNKNOWN_TYPE"
+	case
+		api.SQL_CHAR:
+		return "CHAR"
+	case api.SQL_NUMERIC:
+		return "NUMERIC"
+	case api.SQL_DECIMAL:
+		return "DECIMAL"
+	case api.SQL_INTEGER:
+		return "INTEGER"
+	case api.SQL_SMALLINT:
+		return "SMALLINT"
+	case api.SQL_FLOAT:
+		return "FLOAT"
+	case api.SQL_REAL:
+		return "REAL"
+	case api.SQL_DOUBLE:
+		return "DOUBLE"
+	case api.SQL_DATETIME:
+		return "DATATIME"
+	//TODO: check if we can choose the sub type based on other info
+	//case api.SQL_DATE:
+	//	return "DATE"
+	case api.SQL_TIME:
+		return "TIME"
+	case api.SQL_VARCHAR:
+		return "VARCHAR"
+	case api.SQL_TYPE_DATE:
+		return "TYPE_DATE"
+	case api.SQL_TYPE_TIME:
+		return "TYPE_TIME"
+	case api.SQL_TYPE_TIMESTAMP:
+		return "TYPE_TIMESTAMP"
+	case api.SQL_TIMESTAMP:
+		return "TIMESTAMP"
+	case api.SQL_LONGVARCHAR:
+		return "LONGVARCHAR"
+	case api.SQL_BINARY:
+		return "BINARY"
+	case api.SQL_VARBINARY:
+		return "VARBINARY"
+	case api.SQL_LONGVARBINARY:
+		return "LONGVARBINARY"
+	case api.SQL_BIGINT:
+		return "BIGINT"
+	case api.SQL_TINYINT:
+		return "TINYINT"
+	case api.SQL_BIT:
+		return "BIT"
+	case api.SQL_WCHAR:
+		return "WCHAR"
+	case api.SQL_WVARCHAR:
+		return "VARCHAR"
+	case api.SQL_WLONGVARCHAR:
+		return "WLONGVARCHAR"
+	case api.SQL_GUID:
+		return "GUID"
+	case api.SQL_SIGNED_OFFSET:
+		return "SIGNED_OFFSET"
+	case api.SQL_UNSIGNED_OFFSET:
+		return "UNSIGNE_OFFSET"
+	case api.SQL_SS_XML:
+		return "SS_XML"
+	case api.SQL_SS_TIME2:
+		return "SS_TIME2"
 	}
 
+	return fmt.Sprintf("UNKNOWN %v", ct)
 }
 
 func cTypeString(ct api.SQLSMALLINT) string {
