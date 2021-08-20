@@ -126,7 +126,7 @@ func sqlTypeLenghtFrmSize(ct api.SQLSMALLINT, size int64) (int64, bool) {
 	case api.SQL_TIME:
 		return size, false
 	case api.SQL_VARCHAR:
-		return size - 1, false
+		return size - 1, true
 	case api.SQL_TYPE_DATE:
 		return size, false
 	case api.SQL_TYPE_TIME:
@@ -136,9 +136,9 @@ func sqlTypeLenghtFrmSize(ct api.SQLSMALLINT, size int64) (int64, bool) {
 	case api.SQL_TIMESTAMP:
 		return size, false
 	case api.SQL_LONGVARCHAR:
-		return size - 1, false
+		return size - 1, true
 	case api.SQL_BINARY:
-		return size, false
+		return size, true
 	case api.SQL_VARBINARY:
 		return size - 1, true
 	case api.SQL_LONGVARBINARY:
