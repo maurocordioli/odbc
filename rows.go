@@ -21,6 +21,7 @@ func (r *Rows) Columns() []string {
 	for i := 0; i < len(names); i++ {
 		names[i] = r.os.Cols[i].Name()
 	}
+
 	return names
 }
 
@@ -71,9 +72,11 @@ func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
 
 	switch x := r.os.Cols[index].(type) {
 	case *BindableColumn:
-		return sqlTypeString(x.CType) + "|" + cTypeString(x.CType)
+
+		return sqlTypeString(x.SQLType) + "|" + cTypeString(x.CType)
 	case *NonBindableColumn:
-		return sqlTypeString(x.CType) + "|" + cTypeString(x.CType)
+
+		return sqlTypeString(x.SQLType) + "|" + cTypeString(x.CType)
 	}
 	return ""
 }
@@ -82,13 +85,89 @@ func (r *Rows) ColumnTypeLength(index int) (length int64, ok bool) {
 
 	switch x := r.os.Cols[index].(type) {
 	case *BindableColumn:
-		//zap.S().Infof("BindableColumn ************************** ColumnTypeLength %v %v", index, x.Size)
-		return int64(x.Size), true
+		//sizex, _ := sqlTypeLenghtFrmSize(x.SQLType, int64(x.Size))
+		//zap.S().Infof("BindableColumn ************************** ColumnTypeLength %v %v %v %v", index, sizex, x.Size, int64(x.Len))
+		return sqlTypeLenghtFrmSize(x.SQLType, int64(x.Size))
 	case *NonBindableColumn:
 		//zap.S().Infof("BindableColumn ************************** ColumnTypeLength %v", index)
 		return 0, false
 	}
 	return 0, false
+}
+
+func sqlTypeLenghtFrmSize(ct api.SQLSMALLINT, size int64) (int64, bool) {
+
+	switch ct {
+
+	case api.SQL_UNKNOWN_TYPE:
+		return size, false
+	case
+		api.SQL_CHAR:
+		return size - 1, true
+	case api.SQL_NUMERIC:
+		return size, false
+	case api.SQL_DECIMAL:
+		return size, false
+	case api.SQL_INTEGER:
+		return size, false
+	case api.SQL_SMALLINT:
+		return size, false
+	case api.SQL_FLOAT:
+		return size, false
+	case api.SQL_REAL:
+		return size, false
+	case api.SQL_DOUBLE:
+		return size, false
+	case api.SQL_DATETIME:
+		return size, false
+	//TODO: check if we can choose the sub type based on other info
+	//case api.SQL_DATE:
+	//	return "DATE"
+	case api.SQL_TIME:
+		return size, false
+	case api.SQL_VARCHAR:
+		return size - 1, false
+	case api.SQL_TYPE_DATE:
+		return size, false
+	case api.SQL_TYPE_TIME:
+		return size, false
+	case api.SQL_TYPE_TIMESTAMP:
+		return size, false
+	case api.SQL_TIMESTAMP:
+		return size, false
+	case api.SQL_LONGVARCHAR:
+		return size - 1, false
+	case api.SQL_BINARY:
+		return size, false
+	case api.SQL_VARBINARY:
+		return size - 1, true
+	case api.SQL_LONGVARBINARY:
+		return size - 1, true
+	case api.SQL_BIGINT:
+		return size, false
+	case api.SQL_TINYINT:
+		return size, false
+	case api.SQL_BIT:
+		return size, false
+	case api.SQL_WCHAR:
+		return size/2 - 1, true
+	case api.SQL_WVARCHAR:
+		return size/2 - 1, true
+	case api.SQL_WLONGVARCHAR:
+		return size/2 - 1, true
+	case api.SQL_GUID:
+		return size/2 - 1, false
+	case api.SQL_SIGNED_OFFSET:
+		return size, false
+	case api.SQL_UNSIGNED_OFFSET:
+		return size, false
+	case api.SQL_SS_XML:
+		return size, true
+	case api.SQL_SS_TIME2:
+		return size, false
+	}
+
+	return size, false
 }
 
 func sqlTypeString(ct api.SQLSMALLINT) string {
@@ -148,7 +227,7 @@ func sqlTypeString(ct api.SQLSMALLINT) string {
 	case api.SQL_WCHAR:
 		return "WCHAR"
 	case api.SQL_WVARCHAR:
-		return "VARCHAR"
+		return "WVARCHAR"
 	case api.SQL_WLONGVARCHAR:
 		return "WLONGVARCHAR"
 	case api.SQL_GUID:
