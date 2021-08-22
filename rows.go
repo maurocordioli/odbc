@@ -5,9 +5,11 @@
 package odbc
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"fmt"
 	"io"
+	"reflect"
 
 	"github.com/maurocordioli/odbc/api"
 )
@@ -67,16 +69,30 @@ func (r *Rows) NextResultSet() error {
 	return nil
 }
 
+func (r *Rows) ColumnTypeScanType(index int) reflect.Type {
+
+	switch x := r.os.Cols[index].(type) {
+	case *BindableColumn:
+
+		return sqlTypeReflect(x.SQLType)
+	case *NonBindableColumn:
+
+		return sqlTypeReflect(x.SQLType)
+	}
+
+	return reflect.TypeOf(sql.NullString{})
+}
+
 // ColumnTypeDatabaseTypeName return the database system type name.
 func (r *Rows) ColumnTypeDatabaseTypeName(index int) string {
 
 	switch x := r.os.Cols[index].(type) {
 	case *BindableColumn:
 
-		return sqlTypeString(x.SQLType) + "|" + cTypeString(x.CType)
+		return sqlTypeString(x.SQLType)
 	case *NonBindableColumn:
 
-		return sqlTypeString(x.SQLType) + "|" + cTypeString(x.CType)
+		return sqlTypeString(x.SQLType)
 	}
 	return ""
 }
@@ -245,7 +261,85 @@ func sqlTypeString(ct api.SQLSMALLINT) string {
 	return fmt.Sprintf("UNKNOWN %v", ct)
 }
 
-func cTypeString(ct api.SQLSMALLINT) string {
+func sqlTypeReflect(ct api.SQLSMALLINT) reflect.Type {
+
+	switch ct {
+
+	case api.SQL_UNKNOWN_TYPE:
+		var r interface{}
+		return reflect.TypeOf(r)
+	case
+		api.SQL_CHAR:
+		return reflect.TypeOf(sql.NullString{})
+	case api.SQL_NUMERIC:
+		return reflect.TypeOf(sql.NullFloat64{})
+	case api.SQL_DECIMAL:
+		return reflect.TypeOf(sql.NullFloat64{})
+	case api.SQL_INTEGER:
+		return reflect.TypeOf(sql.NullInt32{})
+	case api.SQL_SMALLINT:
+		return reflect.TypeOf(sql.NullInt16{})
+	case api.SQL_FLOAT:
+		return reflect.TypeOf(sql.NullFloat64{})
+	case api.SQL_REAL:
+		return reflect.TypeOf(float32(0))
+	case api.SQL_DOUBLE:
+		return reflect.TypeOf(float64(0))
+	case api.SQL_DATETIME:
+		return reflect.TypeOf(sql.NullTime{})
+	//TODO: check if we can choose the sub type based on other info
+	//case api.SQL_DATE:
+	//	return "DATE"
+	case api.SQL_TIME:
+		return reflect.TypeOf(sql.NullTime{})
+	case api.SQL_VARCHAR:
+		return reflect.TypeOf(sql.NullString{})
+	case api.SQL_TYPE_DATE:
+		return reflect.TypeOf(sql.NullTime{})
+	case api.SQL_TYPE_TIME:
+		return reflect.TypeOf(sql.NullTime{})
+	case api.SQL_TYPE_TIMESTAMP:
+		return reflect.TypeOf(sql.NullTime{})
+	case api.SQL_TIMESTAMP:
+		return reflect.TypeOf(sql.NullTime{})
+	case api.SQL_LONGVARCHAR:
+		return reflect.TypeOf(sql.NullString{})
+	case api.SQL_BINARY:
+		return reflect.TypeOf([]byte{})
+	case api.SQL_VARBINARY:
+		return reflect.TypeOf([]byte{})
+	case api.SQL_LONGVARBINARY:
+		return reflect.TypeOf([]byte{})
+	case api.SQL_BIGINT:
+		return reflect.TypeOf(sql.NullInt64{})
+	case api.SQL_TINYINT:
+		return reflect.TypeOf(sql.NullByte{})
+	case api.SQL_BIT:
+		return reflect.TypeOf(sql.NullByte{})
+	case api.SQL_WCHAR:
+		return reflect.TypeOf(sql.NullString{})
+	case api.SQL_WVARCHAR:
+		return reflect.TypeOf(sql.NullString{})
+	case api.SQL_WLONGVARCHAR:
+		return reflect.TypeOf(sql.NullString{})
+	case api.SQL_GUID:
+		return reflect.TypeOf(sql.NullString{})
+	case api.SQL_SIGNED_OFFSET:
+		return reflect.TypeOf(sql.NullInt32{})
+	case api.SQL_UNSIGNED_OFFSET:
+		return reflect.TypeOf(sql.NullInt32{})
+	case api.SQL_SS_XML:
+		return reflect.TypeOf(sql.NullString{})
+	case api.SQL_SS_TIME2:
+		return reflect.TypeOf(sql.NullString{})
+	}
+
+	var v interface{}
+	return reflect.TypeOf(v)
+
+}
+
+func cTypeReflectType(ct api.SQLSMALLINT) string {
 	switch ct {
 	case api.SQL_C_CHAR:
 		return "SQL_C_CHAR"
