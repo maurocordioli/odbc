@@ -1,17 +1,20 @@
+//go:build go1.8
+// +build go1.8
+
 package odbc
 
 import (
 	"context"
 	"database/sql/driver"
-
-	"go.uber.org/zap"
 )
 
 // OpenConnector implements driver.DriverContext.
 func (d *Driver) OpenConnector(dsn string) (driver.Connector, error) {
 
+	drv := *d
+
 	return &mcConnector{
-		dsn: dsn,
+		dsn: dsn, drv: drv,
 	}, nil
 }
 
@@ -28,7 +31,7 @@ type mcConnector struct {
 // TODO: split the logic of mcConn.Open() and mcConn.OpenConnector()
 func (ctor mcConnector) Connect(context.Context) (drv driver.Conn, err error) {
 
-	zap.S().Debugf("Connector Context connect")
+	//zap.S().Debugf("Connector Context connect %v", ctor.dsn)
 	//cheating a little bit
 	//TODO split the logic
 	rc, err := ctor.Driver().Open(ctor.dsn)
@@ -41,6 +44,6 @@ func (ctor mcConnector) Connect(context.Context) (drv driver.Conn, err error) {
 // mainly to maintain compatibility with the Driver method
 // on sql.DB.
 func (ctor mcConnector) Driver() driver.Driver {
-
+	//zap.S().Debugf("Connector Driver %v", ctor.drv)
 	return ctor.drv
 }

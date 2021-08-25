@@ -21,7 +21,8 @@ type Conn struct {
 
 var accessDriverSubstr = strings.ToUpper(strings.Replace("DRIVER={Microsoft Access Driver", " ", "", -1))
 
-func (d *Driver) Open(dsn string) (driver.Conn, error) {
+func (d Driver) Open(dsn string) (driver.Conn, error) {
+
 	if d.initErr != nil {
 		return nil, d.initErr
 	}
