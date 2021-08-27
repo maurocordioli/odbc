@@ -1,5 +1,5 @@
 
-odbc driver based on  alexbrainman work with some changes like
+odbc driver based on  alexbrainman work with some changes for missing functions like
 
 
 - names of the columns
